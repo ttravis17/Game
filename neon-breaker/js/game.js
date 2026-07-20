@@ -1499,7 +1499,7 @@ window.NB = window.NB || {};
 
   // ---- Start ----------------------------------------------------------
 
-  window.addEventListener('DOMContentLoaded', () => {
+  function boot() {
     const canvas = document.getElementById('game');
     const game = new Game(canvas);
 
@@ -1521,5 +1521,12 @@ window.NB = window.NB || {};
       setLevel: (i) => game.startLevel(i),
       launch: () => game.launchBalls(),
     };
-  });
+  }
+
+  // Funktioniert egal, ob das Skript vor oder nach DOM-Ready läuft
+  if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
 })();
