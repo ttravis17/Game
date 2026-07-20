@@ -294,6 +294,7 @@ window.NB = window.NB || {};
       this.spawnStuckBall();
       this.paddleHits = 0;
       this.combo = 0;
+      this.levelLifeLost = false;
       this.bgHueTarget = L.hue;
       this.banner = { title: `LEVEL ${i + 1}`, sub: L.name, t: 0, dur: 2.1 };
       this.setState('playing');
@@ -417,7 +418,7 @@ window.NB = window.NB || {};
       const chance = brick.type === 'M' ? 1
         : brick.kind === 'tough' ? 0.16
         : brick.kind === 'explosive' ? 0.1 : 0.08;
-      if (Math.random() < chance && this.powerups.length < 4) {
+      if (Math.random() < chance && (brick.type === 'M' || this.powerups.length < 4)) {
         this.powerups.push(new NB.PowerUp(c.x, c.y, NB.PowerUp.randomType()));
       }
 
@@ -451,7 +452,8 @@ window.NB = window.NB || {};
       this.lasers = [];
       this.powerups = [];
       this.setState('levelclear');
-      const bonus = this.lives * 500;
+      this.levelPerfect = !this.levelLifeLost;
+      const bonus = this.lives * 500 + (this.levelPerfect ? 1000 : 0);
       this.levelBonus = bonus;
       this.score += bonus;
       A.sfx.levelClear();
@@ -523,6 +525,7 @@ window.NB = window.NB || {};
 
     loseLife() {
       this.lives--;
+      this.levelLifeLost = true;
       this.combo = 0;
       this.paddleHits = 0;
       this.fx = { wide: 0, laser: 0, fire: 0, sticky: 0, slow: 0, shield: this.fx.shield, laserCd: 0 };
@@ -1067,7 +1070,7 @@ window.NB = window.NB || {};
       ctx.textAlign = 'center';
       ctx.font = `600 15px ${FONT}`;
       ctx.fillStyle = 'rgba(160,180,220,0.75)';
-      ctx.fillText(`LEVEL ${this.level + 1}/12`, C.W / 2, 34);
+      ctx.fillText(`LEVEL ${this.level + 1}/${NB.LEVELS.length}`, C.W / 2, 34);
       ctx.font = `700 22px ${FONT}`;
       ctx.fillStyle = U.hsla(this.bgHue, 80, 78, 1);
       ctx.shadowColor = U.hsla(this.bgHue, 100, 60, 0.8);
@@ -1096,7 +1099,7 @@ window.NB = window.NB || {};
       ctx.shadowBlur = 0;
 
       // Pause-Button
-      this.drawIconButton(ctx, 'pause', C.W - 56, 26, 40, this.state === 'paused' ? 'play' : 'pause');
+      this.drawIconButton(ctx, 'pause', C.W - 62, 24, 44, this.state === 'paused' ? 'play' : 'pause');
 
       // Aktive Power-Ups als Pillen
       let px = 26;
@@ -1385,13 +1388,25 @@ window.NB = window.NB || {};
         ctx.shadowColor = U.hsla(55, 100, 60, 0.9);
         ctx.shadowBlur = 14;
         ctx.fillText(`Bonus: +${U.fmt(this.levelBonus || 0)}`, C.W / 2, 500);
+        if (this.levelPerfect) {
+          const pulse = 1 + Math.sin(this.time * 7) * 0.05;
+          ctx.save();
+          ctx.translate(C.W / 2, 556);
+          ctx.scale(pulse, pulse);
+          ctx.font = `800 34px ${FONT}`;
+          ctx.shadowColor = U.hsla(150, 100, 60, 1);
+          ctx.shadowBlur = 18;
+          ctx.fillStyle = U.hsla(150, 100, 72, 1);
+          ctx.fillText('★ PERFEKT — ohne Ballverlust! ★', 0, 0);
+          ctx.restore();
+        }
         ctx.shadowBlur = 0;
       }
       if (this.stateT > 1.1) {
         ctx.font = `500 19px ${FONT}`;
         ctx.textAlign = 'center';
         ctx.fillStyle = 'rgba(190,210,240,0.75)';
-        ctx.fillText('Klick für nächstes Level …', C.W / 2, 560);
+        ctx.fillText('Klick für nächstes Level …', C.W / 2, this.levelPerfect ? 610 : 560);
       }
     }
 
