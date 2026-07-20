@@ -95,6 +95,12 @@ window.NB = window.NB || {};
       this.uiButtons = [];
       this.hoverBtn = null;
 
+      // Eingabe-Modus: bestimmt gerätegerechte Hinweise (Touch-Geräte
+      // haben keine Leertaste). Startwert aus der Zeiger-Fähigkeit,
+      // wird bei tatsächlicher Eingabe live aktualisiert.
+      this.inputMode = (window.matchMedia
+        && window.matchMedia('(pointer: coarse)').matches) ? 'touch' : 'desktop';
+
       // Skalierung
       this.dpr = 1; this.scale = 1; this.offX = 0; this.offY = 0;
 
@@ -137,6 +143,7 @@ window.NB = window.NB || {};
         this.pointer.x = p.x; this.pointer.y = p.y;
         this.pointer.down = true;
         this.pointer.type = e.pointerType;
+        this.inputMode = e.pointerType === 'touch' ? 'touch' : 'desktop';
         if (e.pointerType === 'touch') this.lastTouchX = p.x;
         this.onPress(p);
         e.preventDefault();
@@ -166,6 +173,7 @@ window.NB = window.NB || {};
       window.addEventListener('keydown', (e) => {
         A.unlock();
         this.keys[e.code] = true;
+        this.inputMode = 'desktop';
         if (e.code === 'Space') {
           e.preventDefault();
           this.onConfirm();
@@ -350,7 +358,7 @@ window.NB = window.NB || {};
       if (x !== undefined) P.spawnText(x, y, '+' + U.fmt(total), { hue: hue ?? 55 });
       if (this.score > STORE.high && !this.newRecord && STORE.high > 0) {
         this.newRecord = true;
-        P.spawnText(C.W / 2, 300, 'NEUER REKORD!', { hue: 55, big: true, dur: 1.6 });
+        P.spawnText(C.W / 2, 300, 'NEW RECORD!', { hue: 55, big: true, dur: 1.6 });
       }
     }
 
@@ -515,7 +523,7 @@ window.NB = window.NB || {};
           break;
         case 'life':
           this.lives = Math.min(this.lives + 1, 6);
-          P.spawnText(px, py - 80, '+1 LEBEN', { hue: 340, big: true, dur: 1.3 });
+          P.spawnText(px, py - 80, '+1 LIFE', { hue: 340, big: true, dur: 1.3 });
           break;
         default: break;
       }
@@ -1038,7 +1046,7 @@ window.NB = window.NB || {};
       ctx.textAlign = 'left';
       ctx.font = `600 15px ${FONT}`;
       ctx.fillStyle = 'rgba(160,180,220,0.75)';
-      ctx.fillText('PUNKTE', 26, 34);
+      ctx.fillText('SCORE', 26, 34);
       const pop = 1 + this.scorePop * 0.12;
       ctx.save();
       ctx.translate(26, 66);
@@ -1082,7 +1090,7 @@ window.NB = window.NB || {};
       ctx.textAlign = 'right';
       ctx.font = `600 15px ${FONT}`;
       ctx.fillStyle = 'rgba(160,180,220,0.75)';
-      ctx.fillText('LEBEN', C.W - 82, 34);
+      ctx.fillText('LIVES', C.W - 82, 34);
       for (let i = 0; i < Math.max(0, this.lives); i++) {
         const x = C.W - 90 - i * 26;
         const g = ctx.createRadialGradient(x - 2, 60 - 2, 0, x, 60, 9);
@@ -1135,11 +1143,17 @@ window.NB = window.NB || {};
         ctx.font = `700 21px ${FONT}`;
         ctx.textAlign = 'center';
         ctx.fillStyle = `rgba(200,225,255,${a})`;
-        ctx.fillText('Klick oder Leertaste zum Start', C.W / 2, C.PADDLE_Y - 80);
+        const launchHint = this.inputMode === 'touch'
+          ? 'Tap to launch the ball'
+          : 'Click or press Space to launch';
+        ctx.fillText(launchHint, C.W / 2, C.PADDLE_Y - 80);
         if (this.level === 0 && this.bricksDestroyed === 0) {
           ctx.font = `500 16px ${FONT}`;
           ctx.fillStyle = 'rgba(170,195,230,0.65)';
-          ctx.fillText('Steuerung: Maus bewegen · Finger ziehen · Pfeiltasten', C.W / 2, C.PADDLE_Y - 50);
+          const ctrlHint = this.inputMode === 'touch'
+            ? 'Drag anywhere to move the paddle'
+            : 'Move the mouse or use the arrow keys';
+          ctx.fillText(ctrlHint, C.W / 2, C.PADDLE_Y - 50);
         }
       }
       ctx.restore();
@@ -1276,21 +1290,21 @@ window.NB = window.NB || {};
       ctx.font = `600 20px ${FONT}`;
       ctx.textAlign = 'center';
       ctx.fillStyle = 'rgba(170,200,240,0.8)';
-      ctx.fillText('12 Level · Power-Ups · Combos', C.W / 2, 428);
+      ctx.fillText('12 Levels · Power-Ups · Combos', C.W / 2, 428);
 
       // Buttons
       const maxLvl = STORE.maxLevel;
       let y = 560;
-      this.drawButton(ctx, 'play', C.W / 2, y, 320, 74, '▶  Spielen', true);
+      this.drawButton(ctx, 'play', C.W / 2, y, 320, 74, '▶  Play', true);
       y += 100;
       if (maxLvl > 1 && maxLvl <= NB.LEVELS.length) {
-        this.drawButton(ctx, 'continue', C.W / 2, y, 320, 64, `Fortsetzen · Level ${maxLvl}`, false);
+        this.drawButton(ctx, 'continue', C.W / 2, y, 320, 64, `Continue · Level ${maxLvl}`, false);
         y += 90;
       }
-      this.drawButton(ctx, 'help', C.W / 2, y, 320, 64, 'Anleitung', false);
+      this.drawButton(ctx, 'help', C.W / 2, y, 320, 64, 'How to Play', false);
       y += 90;
-      this.drawButton(ctx, 'sfx', C.W / 2 - 85, y, 150, 56, `Sound ${A.sfxOn ? 'AN' : 'AUS'}`, false);
-      this.drawButton(ctx, 'music', C.W / 2 + 85, y, 150, 56, `Musik ${A.musicOn ? 'AN' : 'AUS'}`, false);
+      this.drawButton(ctx, 'sfx', C.W / 2 - 85, y, 150, 56, `Sound ${A.sfxOn ? 'ON' : 'OFF'}`, false);
+      this.drawButton(ctx, 'music', C.W / 2 + 85, y, 150, 56, `Music ${A.musicOn ? 'ON' : 'OFF'}`, false);
 
       // Highscore
       if (STORE.high > 0) {
@@ -1298,19 +1312,19 @@ window.NB = window.NB || {};
         ctx.fillStyle = U.hsla(55, 100, 70, 0.95);
         ctx.shadowColor = U.hsla(55, 100, 60, 0.8);
         ctx.shadowBlur = 12;
-        ctx.fillText(`★ Highscore: ${U.fmt(STORE.high)}`, C.W / 2, y + 90);
+        ctx.fillText(`★ High Score: ${U.fmt(STORE.high)}`, C.W / 2, y + 90);
         ctx.shadowBlur = 0;
       }
 
       ctx.font = `500 15px ${FONT}`;
       ctx.fillStyle = 'rgba(140,160,200,0.55)';
-      ctx.fillText('Erstellt mit Claude · HTML5 Canvas', C.W / 2, C.H - 36);
+      ctx.fillText('Made with Claude · HTML5 Canvas', C.W / 2, C.H - 36);
     }
 
     renderHelp(ctx) {
       this.uiButtons = [];
       this.dimOverlay(ctx, 0.5);
-      this.bigTitle(ctx, 'Anleitung', 120, 190, 54);
+      this.bigTitle(ctx, 'How to Play', 120, 190, 54);
 
       ctx.save();
       ctx.textAlign = 'left';
@@ -1324,19 +1338,25 @@ window.NB = window.NB || {};
         y += opts.gap || 32;
       };
 
-      line('Steuerung', { bold: true, size: 24, color: '#8fd8ff' });
-      line('Maus bewegen oder Finger ziehen — Paddle steuern');
-      line('Klick / Leertaste — Ball starten');
-      line('Pfeiltasten oder A/D — Paddle per Tastatur');
-      line('P oder Esc — Pause · M — Stumm');
+      line('Controls', { bold: true, size: 24, color: '#8fd8ff' });
+      if (this.inputMode === 'touch') {
+        line('Drag anywhere — move the paddle');
+        line('Tap — launch the ball');
+        line('Tap the pause button (top right) — pause');
+      } else {
+        line('Move the mouse or drag — control the paddle');
+        line('Click / Space — launch the ball');
+        line('Arrow keys or A/D — move with the keyboard');
+        line('P or Esc — pause · M — mute');
+      }
       y += 14;
 
-      line('Steine', { bold: true, size: 24, color: '#8fd8ff' });
-      line('Bunte Steine: 1–3 Treffer · Stahl: unzerstörbar');
-      line('Sprengsteine explodieren · ? lässt immer ein Extra fallen');
+      line('Bricks', { bold: true, size: 24, color: '#8fd8ff' });
+      line('Coloured bricks: 1–3 hits · Steel: indestructible');
+      line('Explosive bricks blow up · ? always drops a power-up');
       y += 14;
 
-      line('Power-Ups (mit dem Paddle fangen)', { bold: true, size: 24, color: '#8fd8ff' });
+      line('Power-Ups (catch them with the paddle)', { bold: true, size: 24, color: '#8fd8ff' });
       const pu = Object.values(NB.POWERUPS);
       for (let i = 0; i < pu.length; i += 2) {
         const a = pu[i], b = pu[i + 1];
@@ -1357,22 +1377,22 @@ window.NB = window.NB || {};
         y += 34;
       }
       y += 10;
-      line('Combo: Steine ohne Paddle-Berührung treffen erhöht', {});
-      line('den Multiplikator — bis ×8!', {});
+      line('Combo: hit bricks without touching the paddle to', {});
+      line('raise the multiplier — up to ×8!', {});
       ctx.restore();
 
-      this.drawButton(ctx, 'back', C.W / 2, C.H - 110, 280, 66, 'Zurück', true);
+      this.drawButton(ctx, 'back', C.W / 2, C.H - 110, 280, 66, 'Back', true);
     }
 
     renderPause(ctx) {
       this.uiButtons = [];
       this.dimOverlay(ctx);
-      this.bigTitle(ctx, 'PAUSE', 300, 190);
-      this.drawButton(ctx, 'resume', C.W / 2, 460, 320, 70, '▶  Weiter', true);
-      this.drawButton(ctx, 'restart', C.W / 2, 560, 320, 62, 'Neustart', false);
-      this.drawButton(ctx, 'menu', C.W / 2, 650, 320, 62, 'Hauptmenü', false);
-      this.drawButton(ctx, 'sfx', C.W / 2 - 85, 740, 150, 56, `Sound ${A.sfxOn ? 'AN' : 'AUS'}`, false);
-      this.drawButton(ctx, 'music', C.W / 2 + 85, 740, 150, 56, `Musik ${A.musicOn ? 'AN' : 'AUS'}`, false);
+      this.bigTitle(ctx, 'PAUSED', 300, 190);
+      this.drawButton(ctx, 'resume', C.W / 2, 460, 320, 70, '▶  Resume', true);
+      this.drawButton(ctx, 'restart', C.W / 2, 560, 320, 62, 'Restart', false);
+      this.drawButton(ctx, 'menu', C.W / 2, 650, 320, 62, 'Main Menu', false);
+      this.drawButton(ctx, 'sfx', C.W / 2 - 85, 740, 150, 56, `Sound ${A.sfxOn ? 'ON' : 'OFF'}`, false);
+      this.drawButton(ctx, 'music', C.W / 2 + 85, 740, 150, 56, `Music ${A.musicOn ? 'ON' : 'OFF'}`, false);
     }
 
     renderLevelClear(ctx) {
@@ -1380,7 +1400,7 @@ window.NB = window.NB || {};
       const a = Math.min(0.45, this.stateT * 2);
       ctx.fillStyle = `rgba(3,5,14,${a})`;
       ctx.fillRect(0, 0, C.W, C.H);
-      this.bigTitle(ctx, 'LEVEL GESCHAFFT!', 420, 130, 56);
+      this.bigTitle(ctx, 'LEVEL CLEAR!', 420, 130, 56);
       if (this.stateT > 0.5) {
         ctx.font = `700 30px ${FONT}`;
         ctx.textAlign = 'center';
@@ -1397,7 +1417,7 @@ window.NB = window.NB || {};
           ctx.shadowColor = U.hsla(150, 100, 60, 1);
           ctx.shadowBlur = 18;
           ctx.fillStyle = U.hsla(150, 100, 72, 1);
-          ctx.fillText('★ PERFEKT — ohne Ballverlust! ★', 0, 0);
+          ctx.fillText('★ PERFECT — no ball lost! ★', 0, 0);
           ctx.restore();
         }
         ctx.shadowBlur = 0;
@@ -1406,7 +1426,8 @@ window.NB = window.NB || {};
         ctx.font = `500 19px ${FONT}`;
         ctx.textAlign = 'center';
         ctx.fillStyle = 'rgba(190,210,240,0.75)';
-        ctx.fillText('Klick für nächstes Level …', C.W / 2, this.levelPerfect ? 610 : 560);
+        const nextHint = this.inputMode === 'touch' ? 'Tap for the next level …' : 'Click for the next level …';
+        ctx.fillText(nextHint, C.W / 2, this.levelPerfect ? 610 : 560);
       }
     }
 
@@ -1418,7 +1439,7 @@ window.NB = window.NB || {};
       ctx.textAlign = 'center';
       ctx.font = `700 32px ${FONT}`;
       ctx.fillStyle = '#eaf6ff';
-      ctx.fillText(`Punkte: ${U.fmt(this.score)}`, C.W / 2, 430);
+      ctx.fillText(`Score: ${U.fmt(this.score)}`, C.W / 2, 430);
       if (this.newRecord) {
         const pulse = 1 + Math.sin(this.time * 6) * 0.06;
         ctx.save();
@@ -1428,19 +1449,19 @@ window.NB = window.NB || {};
         ctx.shadowColor = U.hsla(55, 100, 60, 1);
         ctx.shadowBlur = 20;
         ctx.fillStyle = U.hsla(55, 100, 72, 1);
-        ctx.fillText('★ NEUER REKORD! ★', 0, 0);
+        ctx.fillText('★ NEW RECORD! ★', 0, 0);
         ctx.restore();
       } else if (STORE.high > 0) {
         ctx.font = `500 22px ${FONT}`;
         ctx.fillStyle = 'rgba(190,210,240,0.8)';
-        ctx.fillText(`Highscore: ${U.fmt(STORE.high)}`, C.W / 2, 486);
+        ctx.fillText(`High Score: ${U.fmt(STORE.high)}`, C.W / 2, 486);
       }
       ctx.font = `500 20px ${FONT}`;
       ctx.fillStyle = 'rgba(190,210,240,0.7)';
-      ctx.fillText(`Level ${this.level + 1} erreicht · ${this.bricksDestroyed} Steine · Max-Combo ${this.maxCombo}`, C.W / 2, 540);
+      ctx.fillText(`Reached Level ${this.level + 1} · ${this.bricksDestroyed} bricks · Max Combo ${this.maxCombo}`, C.W / 2, 540);
 
-      this.drawButton(ctx, 'again', C.W / 2, 650, 320, 72, '⟳  Nochmal', true);
-      this.drawButton(ctx, 'menu', C.W / 2, 750, 320, 62, 'Hauptmenü', false);
+      this.drawButton(ctx, 'again', C.W / 2, 650, 320, 72, '⟳  Play Again', true);
+      this.drawButton(ctx, 'menu', C.W / 2, 750, 320, 62, 'Main Menu', false);
     }
 
     renderWin(ctx) {
@@ -1450,27 +1471,27 @@ window.NB = window.NB || {};
       if (Math.random() < 0.12) {
         P.spawnFirework(U.rand(80, C.W - 80), U.rand(180, 600), U.rand(0, 360));
       }
-      this.bigTitle(ctx, 'DU HAST', 300, 55, 60);
-      this.bigTitle(ctx, 'GEWONNEN!', 380, 130, 72);
+      this.bigTitle(ctx, 'YOU', 300, 55, 60);
+      this.bigTitle(ctx, 'WIN!', 380, 130, 72);
 
       ctx.textAlign = 'center';
       ctx.font = `700 30px ${FONT}`;
       ctx.fillStyle = '#eaf6ff';
-      ctx.fillText(`Endstand: ${U.fmt(this.score)} Punkte`, C.W / 2, 500);
+      ctx.fillText(`Final Score: ${U.fmt(this.score)}`, C.W / 2, 500);
       if (this.newRecord) {
         ctx.font = `800 30px ${FONT}`;
         ctx.fillStyle = U.hsla(55, 100, 72, 1);
         ctx.shadowColor = U.hsla(55, 100, 60, 0.9);
         ctx.shadowBlur = 16;
-        ctx.fillText('★ NEUER REKORD! ★', C.W / 2, 552);
+        ctx.fillText('★ NEW RECORD! ★', C.W / 2, 552);
         ctx.shadowBlur = 0;
       }
       ctx.font = `500 21px ${FONT}`;
       ctx.fillStyle = 'rgba(190,210,240,0.8)';
-      ctx.fillText(`Alle 12 Level geschafft · Max-Combo ${this.maxCombo}`, C.W / 2, 600);
+      ctx.fillText(`All 12 levels cleared · Max Combo ${this.maxCombo}`, C.W / 2, 600);
 
-      this.drawButton(ctx, 'again', C.W / 2, 700, 320, 72, '⟳  Nochmal', true);
-      this.drawButton(ctx, 'menu', C.W / 2, 800, 320, 62, 'Hauptmenü', false);
+      this.drawButton(ctx, 'again', C.W / 2, 700, 320, 72, '⟳  Play Again', true);
+      this.drawButton(ctx, 'menu', C.W / 2, 800, 320, 62, 'Main Menu', false);
     }
 
     renderBanner(ctx) {

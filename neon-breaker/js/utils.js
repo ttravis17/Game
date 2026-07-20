@@ -74,12 +74,12 @@ NB.U = (() => {
     return { nx: 1, ny: 0, depth: right + cr };
   };
 
-  // Formatiert Punktzahlen mit Tausender-Trennzeichen (de-CH: Apostroph)
+  // Formatiert Punktzahlen mit Tausender-Trennzeichen (Komma, englisch)
   const fmt = (n) => {
     n = Math.round(n);
     let s = String(Math.abs(n)), out = '';
     while (s.length > 3) {
-      out = '’' + s.slice(-3) + out;
+      out = ',' + s.slice(-3) + out;
       s = s.slice(0, -3);
     }
     return (n < 0 ? '-' : '') + s + out;

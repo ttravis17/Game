@@ -15,7 +15,7 @@ window.NB = window.NB || {};
 
 NB.LEVELS = [
   {
-    name: 'Aufwärmen', hue: 190, speed: 420,
+    name: 'Warm-Up', hue: 190, speed: 420,
     rows: [
       '..........',
       '.11111111.',
@@ -25,7 +25,7 @@ NB.LEVELS = [
     ],
   },
   {
-    name: 'Herz', hue: 330, speed: 432,
+    name: 'Heart', hue: 330, speed: 432,
     rows: [
       '..........',
       '..11..11..',
@@ -50,7 +50,7 @@ NB.LEVELS = [
     ],
   },
   {
-    name: 'Festung', hue: 45, speed: 456,
+    name: 'Fortress', hue: 45, speed: 456,
     rows: [
       '..##..##..',
       '..#2222#..',
@@ -61,7 +61,7 @@ NB.LEVELS = [
     ],
   },
   {
-    name: 'Schachbrett', hue: 265, speed: 466,
+    name: 'Checkerboard', hue: 265, speed: 466,
     rows: [
       '1.2.1.2.1.',
       '.2.1.2.1.2',
@@ -72,7 +72,7 @@ NB.LEVELS = [
     ],
   },
   {
-    name: 'Diamant', hue: 175, speed: 476,
+    name: 'Diamond', hue: 175, speed: 476,
     rows: [
       '....11....',
       '...1221...',
@@ -96,7 +96,7 @@ NB.LEVELS = [
     ],
   },
   {
-    name: 'Reaktor', hue: 0, speed: 496,
+    name: 'Reactor', hue: 0, speed: 496,
     rows: [
       '.22222222.',
       '.2......2.',
@@ -120,7 +120,7 @@ NB.LEVELS = [
     ],
   },
   {
-    name: 'Sturm', hue: 280, speed: 516,
+    name: 'Storm', hue: 280, speed: 516,
     rows: [
       '1..2..1..2',
       '.1..2..1..',
@@ -133,7 +133,7 @@ NB.LEVELS = [
     ],
   },
   {
-    name: 'Zitadelle', hue: 150, speed: 526,
+    name: 'Citadel', hue: 150, speed: 526,
     rows: [
       '#2#.22.#2#',
       '.2..22..2.',
