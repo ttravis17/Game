@@ -129,6 +129,7 @@ window.NB = window.NB || {};
 
     bindEvents() {
       window.addEventListener('resize', () => this.resize());
+      this.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
       this.canvas.addEventListener('pointerdown', (e) => {
         A.unlock();
@@ -301,9 +302,13 @@ window.NB = window.NB || {};
 
     nextLevel() {
       if (this.level + 1 >= NB.LEVELS.length) {
+        this.balls = [];
+        this.lasers = [];
+        this.powerups = [];
         this.setState('win');
         this.checkHighscore();
         A.sfx.win();
+        A.music.setIntensity(0.8);
       } else {
         this.startLevel(this.level + 1);
       }
@@ -443,6 +448,8 @@ window.NB = window.NB || {};
 
     onLevelClear() {
       this.slowmo = 1.0;
+      this.lasers = [];
+      this.powerups = [];
       this.setState('levelclear');
       const bonus = this.lives * 500;
       this.levelBonus = bonus;
@@ -525,6 +532,8 @@ window.NB = window.NB || {};
       A.sfx.lifeLost();
       A.music.setIntensity(0.2);
       if (this.lives < 0) {
+        this.lasers = [];
+        this.powerups = [];
         this.setState('gameover');
         this.checkHighscore();
         A.sfx.gameOver();
@@ -586,7 +595,7 @@ window.NB = window.NB || {};
         if (b.x > C.W - 30) { b.x = C.W - 30; b.vx = -Math.abs(b.vx); }
         if (b.y < 30) { b.y = 30; b.vy = Math.abs(b.vy); }
         if (b.y > C.H - 30) { b.y = C.H - 30; b.vy = -Math.abs(b.vy); }
-        if (Math.random() < dt * 20) P.spawnTrail(b.x, b.y, b.hue, 7);
+        P.spawnTrail(b.x, b.y, b.hue, 7);
       }
     }
 
@@ -725,14 +734,22 @@ window.NB = window.NB || {};
           ball.vx *= f; ball.vy *= f;
         }
 
+        const px = ball.x, py = ball.y;
         ball.x += ball.vx * dt;
         ball.y += ball.vy * dt;
 
-        // Trail
-        ball.trailAcc += dt;
-        if (ball.trailAcc > 0.016) {
-          ball.trailAcc = 0;
-          P.spawnTrail(ball.x, ball.y, this.fx.fire > 0 ? 25 : 190, this.fx.fire > 0 ? 9 : 6);
+        // Durchgehender Trail (alle ~7 px ein Glow-Punkt)
+        const moved = Math.hypot(ball.x - px, ball.y - py);
+        ball.trailAcc += moved;
+        if (ball.trailAcc > 7) {
+          const n = Math.floor(ball.trailAcc / 7);
+          ball.trailAcc -= n * 7;
+          const hue = this.fx.fire > 0 ? 25 : 190;
+          const size = this.fx.fire > 0 ? 9 : 6;
+          for (let k = 1; k <= n; k++) {
+            const f = k / n;
+            P.spawnTrail(U.lerp(px, ball.x, f), U.lerp(py, ball.y, f), hue, size);
+          }
         }
 
         // Wände
@@ -792,7 +809,7 @@ window.NB = window.NB || {};
               ball.stuckOffset = off * (pad.w / 2) * 0.9;
               A.sfx.sticky();
             } else {
-              const angle = off * 1.1;
+              const angle = off * 1.1 + U.rand(-0.025, 0.025);
               ball.setDir(angle, speed);
               ball.y = pad.y - pad.h / 2 - ball.r - 0.5;
               A.sfx.paddle(off);
@@ -808,11 +825,16 @@ window.NB = window.NB || {};
         // Steine
         this.collideBallBricks(ball);
 
-        // Nie ganz horizontal fliegen lassen
+        // Nie ganz horizontal oder ganz vertikal fliegen lassen
         const sp = ball.speed();
         if (sp > 1 && Math.abs(ball.vy) < sp * 0.22) {
           const sign = ball.vy === 0 ? -1 : Math.sign(ball.vy);
           ball.vy = sign * sp * 0.25;
+          const f = sp / ball.speed();
+          ball.vx *= f; ball.vy *= f;
+        } else if (sp > 1 && Math.abs(ball.vx) < sp * 0.045) {
+          const sign = ball.vx === 0 ? (Math.random() < 0.5 ? -1 : 1) : Math.sign(ball.vx);
+          ball.vx = sign * sp * 0.06;
           const f = sp / ball.speed();
           ball.vx *= f; ball.vy *= f;
         }
@@ -1074,11 +1096,12 @@ window.NB = window.NB || {};
       ctx.shadowBlur = 0;
 
       // Pause-Button
-      this.drawIconButton(ctx, 'pause', C.W - 56, 26, 40, this.state === 'paused' ? '▶' : '⏸');
+      this.drawIconButton(ctx, 'pause', C.W - 56, 26, 40, this.state === 'paused' ? 'play' : 'pause');
 
       // Aktive Power-Ups als Pillen
       let px = 26;
       for (const key of ['wide', 'laser', 'fire', 'sticky', 'slow']) {
+        if (this.state !== 'playing') break;
         if (this.fx[key] <= 0) continue;
         const def = NB.POWERUPS[key];
         const frac = U.clamp(this.fx[key] / def.dur, 0, 1);
@@ -1095,7 +1118,7 @@ window.NB = window.NB || {};
         ctx.fillText(`${def.letter} ${Math.ceil(this.fx[key])}s`, px + 33, y + 1);
         px += 76;
       }
-      if (this.fx.shield > 0) {
+      if (this.fx.shield > 0 && this.state === 'playing') {
         ctx.font = `800 14px ${FONT}`;
         ctx.textAlign = 'center';
         ctx.fillStyle = U.hsla(160, 95, 65, 0.9);
@@ -1131,11 +1154,20 @@ window.NB = window.NB || {};
       ctx.lineWidth = 1.5;
       U.roundRect(ctx, x, y, size, size, 10);
       ctx.stroke();
-      ctx.font = `600 ${size * 0.45}px ${FONT}`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
+      // Icons selbst zeichnen (fontunabhängig)
       ctx.fillStyle = '#dce8ff';
-      ctx.fillText(icon, x + size / 2, y + size / 2 + 1);
+      const cx = x + size / 2, cy = y + size / 2;
+      if (icon === 'pause') {
+        ctx.fillRect(cx - 7, cy - 8, 5, 16);
+        ctx.fillRect(cx + 2, cy - 8, 5, 16);
+      } else if (icon === 'play') {
+        ctx.beginPath();
+        ctx.moveTo(cx - 5, cy - 9);
+        ctx.lineTo(cx + 8, cy);
+        ctx.lineTo(cx - 5, cy + 9);
+        ctx.closePath();
+        ctx.fill();
+      }
       ctx.restore();
       this.uiButtons.push({ id, x, y, w: size, h: size });
     }
@@ -1200,6 +1232,22 @@ window.NB = window.NB || {};
     renderTitle(ctx) {
       this.uiButtons = [];
       const t = this.time;
+
+      // Demo-Bälle im Hintergrund
+      for (const b of this.demoBalls) {
+        const g = ctx.createRadialGradient(b.x - 3, b.y - 3, 0, b.x, b.y, 11);
+        g.addColorStop(0, '#fff');
+        g.addColorStop(0.5, U.hsla(b.hue, 90, 75, 0.9));
+        g.addColorStop(1, U.hsla(b.hue, 95, 55, 0.8));
+        ctx.save();
+        ctx.shadowColor = U.hsla(b.hue, 100, 60, 0.9);
+        ctx.shadowBlur = 16;
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, 10, 0, U.TAU);
+        ctx.fill();
+        ctx.restore();
+      }
 
       // Logo
       ctx.save();

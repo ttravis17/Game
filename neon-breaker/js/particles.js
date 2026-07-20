@@ -7,7 +7,7 @@ window.NB = window.NB || {};
 
 NB.particles = (() => {
   const U = NB.U;
-  const MAX = 1100;
+  const MAX = 1600;
   const pool = [];
   let count = 0;
 
@@ -106,6 +106,12 @@ NB.particles = (() => {
   function spawnText(x, y, text, { hue = 55, big = false, dur = 0.9 } = {}) {
     const p = alloc();
     if (!p) return;
+    // Text im Spielfeld halten
+    if (NB.C) {
+      const m = big ? 150 : 60;
+      x = U.clamp(x, m, NB.C.W - m);
+      y = Math.max(y, big ? 140 : 60);
+    }
     p.type = TEXT;
     p.x = x; p.y = y;
     p.vx = 0; p.vy = big ? -34 : -58;
