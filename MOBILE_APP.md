@@ -1,104 +1,192 @@
-# NEON BREAKER als App — Web-App vs. echter App Store
+# NEON BREAKER — Weg in den Apple App Store
 
-Kurze, ehrliche Übersicht: was ich für dich vorbereitet habe, was direkt
-funktioniert, und was du selbst noch tun musst (weil es Dinge außerhalb
-meiner Umgebung braucht — einen Mac und deinen eigenen Apple-Account).
+Kompletter, ehrlicher Fahrplan. Was schon fertig ist, was **du** selbst tun
+musst (weil es deinen Mac und deinen persönlichen Apple-Account braucht) und
+fertige Texte zum Reinkopieren.
 
-## Die 3 Stufen im Überblick
+## Die 3 Stufen
 
-| Stufe | Was es ist | Kosten | Wo spielbar | Aufwand |
-|---|---|---|---|---|
-| **1. Artifact-Link** | Claude-Vorschau, nur über Claude erreichbar | Gratis | Nur mit dem Link, an Claude gebunden | ✅ Schon fertig |
-| **2. Web-App / PWA** | Echte, eigene Website, installierbar als Icon auf dem Homescreen | Gratis | Überall im Browser, offline nach 1. Besuch | ✅ Schon fertig (dieser Commit) |
-| **3. Echte App-Store-App** | Natives .ipa, im Apple App Store zum Download | 99 $/Jahr (Apple Developer Program) | App Store, weltweit | 🔧 Vorbereitet, du brauchst noch einen Mac |
+| Stufe | Was es ist | Kosten | Status |
+|---|---|---|---|
+| 1. Artifact-Link | Claude-Vorschau, an Claude gebunden | Gratis | ✅ fertig |
+| 2. Web-App / PWA | Eigene Website, Icon auf dem Homescreen, offline | Gratis | ✅ **live** unter `https://ttravis17.github.io/Game/` |
+| 3. App Store | Native App zum Download im Apple App Store | 99 US$/Jahr | 🔧 vorbereitet — diese Anleitung |
 
----
-
-## Stufe 2: Web-App / PWA — ist jetzt fertig
-
-Das Spiel hat jetzt:
-- `manifest.json` — Name, Icon, Farben, "wie eine App starten"
-- `sw.js` — Service Worker, cacht alle Dateien → **funktioniert offline**
-- Eigene Icons im Spiel-Look (`neon-breaker/icons/`)
-- Meta-Tags für iOS ("Zum Home-Bildschirm hinzufügen" sieht dann nativ aus)
-
-**Damit das eine echte, eigene Internetadresse wird (statt nur der
-Claude-Link), aktiviere GitHub Pages — einmalig, 10 Sekunden:**
-
-1. Öffne dein Repo auf github.com → **Settings** → **Pages**
-   (direkt: `https://github.com/ttravis17/Game/settings/pages`)
-2. Bei **Source** wähle **„GitHub Actions"** aus
-3. Fertig — der Workflow (`.github/workflows/pages.yml`, liegt schon im
-   Repo) deployt automatisch bei jedem Push. Nach ca. 1 Minute ist die
-   Seite live unter `https://ttravis17.github.io/Game/`
-
-**Auf dem iPhone installieren:** Seite in Safari öffnen → Teilen-Symbol →
-„Zum Home-Bildschirm". Danach startet es wie eine echte App, eigenes
-Icon, kein Browser-Rahmen, spielt offline weiter. Genau das, was die
-meisten kleinen Spiele/Tools als „Mobile App" brauchen — **ganz ohne
-App Store, ohne Kosten, ohne Wartezeit**.
+> **Ehrlicher Hinweis vorweg:** Für ein kleines Spiel deckt Stufe 2 (PWA)
+> praktisch alles ab, was sich „wie eine App" anfühlt — eigenes Icon,
+> Vollbild, offline. Stufe 3 lohnt sich vor allem, wenn Leute dein Spiel
+> **im App Store finden und herunterladen** können sollen. Der Aufwand und
+> die 99 US$/Jahr sind real.
 
 ---
 
-## Stufe 3: Echter Eintrag im Apple App Store
+## Schritt 0 — Voraussetzungen prüfen
 
-Das ist ein größeres Unterfangen, unabhängig davon, wer es baut — das
-liegt an Apples Regeln, nicht an technischen Grenzen dieses Spiels:
+Für den App Store brauchst du **zwingend beides**:
 
-**Was zwingend nötig ist (das kann ich nicht für dich erledigen):**
-- Ein **Mac mit Xcode** — Apple erlaubt iOS-Apps nur von macOS aus zu
-  bauen und einzureichen. Ich laufe in einer Linux-Cloud-Umgebung ohne
-  Xcode, das kann ich hier nicht ausführen.
-- Ein **Apple Developer Program**-Konto (99 $/Jahr, dein eigener
-  Apple-Account) — ohne das lässt Apple keine Einreichung zu.
-- Etwas Geduld für **App Review** (Apples Prüfung, meist 1–3 Tage).
+1. **Apple Developer Program** — 99 US$/Jahr, mit deiner eigenen Apple-ID.
+   Anmeldung: <https://developer.apple.com/programs/enroll/>
+   (Ohne dieses Konto lässt Apple keine Veröffentlichung zu — es gibt keinen
+   kostenlosen Weg in den öffentlichen Store.)
 
-**Was ich schon vorbereitet habe (liegt im Repo):**
-- `capacitor.config.json` — Konfiguration für [Capacitor](https://capacitorjs.com/),
-  dem Standard-Tool, um bestehende Web-Spiele wie dieses in eine echte
-  native App-Hülle zu packen (nutzen z. B. viele kleine Browsergames)
-- `package.json` mit den nötigen Abhängigkeiten
-- `neon-breaker/icons/icon-1024-master.png` — hochauflösendes Icon als
-  Ausgangsbasis für alle App-Store-Icongrößen
+2. **Einen Weg, auf macOS zu bauen.** Apple erlaubt das Einreichen von
+   iOS-Apps nur von einem Mac aus. Zwei Möglichkeiten:
+   - **A) Du hast einen Mac** → einfachster Weg, siehe unten.
+   - **B) Kein Mac** → Cloud-Build-Dienst (z. B. Codemagic), siehe unten.
 
-**Was du selbst tust, sobald du einen Mac zur Hand hast:**
+---
+
+## Weg A — Mit eigenem Mac (empfohlen)
+
+Alle Befehle im Projektordner (dort, wo `capacitor.config.json` liegt).
 
 ```bash
-# 1. Im Projektordner: Abhängigkeiten installieren
+# 1. Node-Abhängigkeiten installieren (einmalig)
 npm install
 
-# 2. iOS-Projekt erzeugen (legt einen ios/-Ordner mit echtem Xcode-Projekt an)
+# 2. iOS-Projekt erzeugen — legt einen echten Xcode-Ordner ios/ an
 npx cap add ios
 
-# 3. App-Icons in allen Apple-Größen automatisch aus dem Master-Icon erzeugen
+# 3. Alle Apple-Icon-Größen automatisch aus dem Master-Icon erzeugen
 npx @capacitor/assets generate --iconBackgroundColor '#05060e' \
   --splashBackgroundColor '#05060e' --ios
 
-# 4. Xcode öffnen
+# 4. Web-Dateien ins iOS-Projekt kopieren
+npx cap sync ios
+
+# 5. Xcode öffnen
 npx cap open ios
 ```
 
-In Xcode dann:
-1. Unter **Signing & Capabilities** dein Apple-Developer-Team auswählen
-2. `com.thoenen.neonbreaker` in `capacitor.config.json` ist nur ein
-   **Platzhalter** — ändere es auf eine Bundle-ID, die zu deinem
-   Developer-Account passt (z. B. `com.deinname.neonbreaker`)
-3. **Product → Archive**, dann über **Organizer** an App Store Connect
-   hochladen
-4. In [App Store Connect](https://appstoreconnect.apple.com/) den
-   Store-Eintrag ausfüllen (Screenshots, Beschreibung, Altersfreigabe)
-   und zur Prüfung einreichen
+**Dann in Xcode:**
 
-**Ohne eigenen Mac:** Cloud-Build-Dienste wie
-[Codemagic](https://codemagic.io/) oder Ionic Appflow bauen und
-signieren iOS-Apps in der Cloud — du brauchst zwar weiterhin das
-Apple-Developer-Konto, aber keinen physischen Mac. Für ein erstes
-kleines Spiel ist das aber meist mehr Aufwand als Nutzen; die PWA
-(Stufe 2) deckt „App auf dem Homescreen" bereits kostenlos ab.
+1. Links das Projekt „App" anklicken → Reiter **Signing & Capabilities**.
+2. **Team** auswählen (dein Apple-Developer-Konto). Xcode kümmert sich
+   danach automatisch um Zertifikate/Provisioning.
+3. **Bundle Identifier** setzen: In `capacitor.config.json` steht aktuell
+   der Platzhalter `com.thoenen.neonbreaker`. Ändere ihn auf eine für dich
+   eindeutige ID (z. B. `com.deinname.neonbreaker`) — sowohl in der Datei
+   als auch in Xcode. Diese ID muss weltweit einmalig sein.
+4. Ein iPhone anschließen oder Simulator wählen → **▶ Run**, um die App
+   zuerst live zu testen.
+5. Wenn alles passt: oben als Ziel **„Any iOS Device"** wählen →
+   Menü **Product → Archive**.
+6. Im **Organizer**-Fenster (öffnet sich automatisch) →
+   **Distribute App → App Store Connect → Upload**.
 
-## Warum nicht gleich Stufe 3 statt Stufe 2?
+Danach weiter bei **Schritt „Store-Eintrag"** unten.
 
-Weil Stufe 2 für ein Spiel wie dieses ehrlich gesagt fast alles bietet,
-was man von „einer App" erwartet — eigenes Icon, Vollbildstart, offline
-spielbar —, aber gratis und sofort ist. Stufe 3 lohnt sich vor allem,
-wenn du das Spiel öffentlich im App Store auffindbar machen willst.
+---
+
+## Weg B — Ohne Mac (Cloud-Build)
+
+Wenn du nur Windows/Linux oder nur ein iPhone hast:
+
+1. Apple-Developer-Konto trotzdem anlegen (Schritt 0).
+2. Bei einem Cloud-Build-Dienst anmelden, der macOS-Runner stellt:
+   - **Codemagic** — <https://codemagic.io> (hat kostenloses Kontingent,
+     gut für Capacitor/Ionic)
+   - Alternativ: Ionic Appflow oder GitHub Actions mit `macos`-Runnern.
+3. Repository verbinden, als Projekttyp **Capacitor / iOS** wählen.
+4. Deine Apple-Zertifikate im Dienst hinterlegen (die Anleitungen dort
+   führen Schritt für Schritt durch die Signierung).
+5. Build starten → der Dienst lädt die fertige `.ipa` automatisch zu
+   App Store Connect hoch.
+
+Das ist etwas mehr Einrichtung als Weg A, kommt aber ohne physischen Mac aus.
+
+---
+
+## Store-Eintrag in App Store Connect
+
+Egal ob Weg A oder B — sobald der Upload durch ist, geht es auf
+<https://appstoreconnect.apple.com> weiter:
+
+1. **Meine Apps → +** → neue App anlegen (Name, Sprache, Bundle-ID wählen).
+2. Die hochgeladene Build-Version auswählen.
+3. Pflichtangaben ausfüllen (fertige Vorschläge unten).
+4. **Datenschutz:** Beim Fragebogen „App-Datenschutz" wählst du
+   **„Es werden keine Daten erfasst"** — das stimmt bei Neon Breaker.
+   Als Datenschutz-URL trägst du ein:
+   `https://ttravis17.github.io/Game/privacy.html`
+   (Diese Seite habe ich bereits erstellt und live gestellt — nur noch
+   deine Kontakt-E-Mail dort eintragen.)
+5. **Zur Prüfung einreichen.** Apples Review dauert meist 1–3 Tage.
+
+### Fertige Texte zum Reinkopieren
+
+**Name:** Neon Breaker
+**Untertitel (max. 30 Zeichen):** Neon Arcade Brick-Breaker
+
+**Werbetext (Promo):**
+> 12 Level, 8 Power-ups, endlose Combos. Zerlege leuchtende Steinmauern in
+> diesem rasanten Neon-Arcade-Klassiker.
+
+**Beschreibung:**
+> NEON BREAKER ist ein rasanter Arcade-Brick-Breaker im leuchtenden
+> Neon-Look.
+>
+> Lass den Ball von deinem Paddle abprallen, zertrümmere farbige
+> Steinmauern und räume 12 handgebaute Level frei — vom lockeren Aufwärmen
+> bis zum explosiven Finale.
+>
+> • 12 einzigartige Level mit eigenem Look
+> • 8 Power-ups: Multiball, Laser, Feuerball, breites Paddle, Schild u. m.
+> • Combo-System mit Punkte-Multiplikator bis ×8
+> • Explodierende Steine und Kettenreaktionen
+> • Voll synthetisierter Sound & Musik
+> • Highscore und Fortschritt bleiben auf deinem Gerät
+> • Keine Werbung, keine Tracker, kein Internet nötig
+>
+> Einfach zu lernen, schwer zu meistern. Viel Spaß!
+
+**Schlüsselwörter (max. 100 Zeichen):**
+> breakout,brick,arcade,neon,ball,paddle,steine,retro,combo,powerup,blocks,spiel
+
+**Kategorie:** Spiele → Arcade
+**Altersfreigabe:** 4+ (keine bedenklichen Inhalte)
+
+### Screenshots (Pflicht)
+
+Apple verlangt Screenshots in bestimmten Größen. Am einfachsten:
+- Öffne `https://ttravis17.github.io/Game/` auf deinem iPhone in Safari.
+- Spiele kurz und mache Screenshots (Seitentaste + Lauter gleichzeitig).
+- Lade 3–5 davon in App Store Connect hoch (Titelbild, Gameplay, Power-ups).
+
+Aktuell verlangt Apple mindestens Screenshots für ein großes iPhone
+(6,5″ oder 6,9″). Screenshots direkt vom iPhone haben automatisch die
+richtige Auflösung.
+
+---
+
+## Kosten & Zeit realistisch
+
+| Posten | Kosten | Einmalig/laufend |
+|---|---|---|
+| Apple Developer Program | 99 US$ | pro Jahr |
+| Mac | vorhanden oder Cloud-Dienst | — |
+| Codemagic (falls kein Mac) | Gratis-Kontingent, dann nutzungsabh. | laufend |
+| Deine Zeit für Einrichtung | ~2–4 Stunden beim ersten Mal | einmalig |
+| Apple App Review | kostenlos | 1–3 Tage Wartezeit |
+
+---
+
+## Kostenlose Alternative: eigenes iPhone
+
+Willst du die App nur **auf deinem eigenen iPhone** haben (nicht im
+öffentlichen Store)? Das geht mit einer **kostenlosen** Apple-ID:
+
+- Weg A ausführen (Mac + Xcode), aber statt „Archive" einfach mit
+  angeschlossenem iPhone auf **▶ Run** gehen.
+- Xcode installiert die App direkt aufs Gerät.
+- Einschränkung: Mit kostenlosem Konto läuft das Zertifikat nach **7 Tagen**
+  ab, dann muss man die App erneut per Xcode installieren.
+
+Für „ich will mein Spiel als App auf meinem Handy" reicht aber ohnehin die
+bereits fertige **PWA** (Stufe 2) — dauerhaft, ohne Mac, ohne Kosten.
+
+---
+
+*Vorbereitet für dich: `capacitor.config.json`, `package.json`,
+`neon-breaker/icons/icon-1024-master.png` (Master-Icon) und
+`neon-breaker/privacy.html` (live gehostete Datenschutzerklärung).*

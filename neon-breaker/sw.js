@@ -3,10 +3,11 @@
  * und beim zweiten Start sofort startet (echtes App-Gefühl).
  */
 'use strict';
-const CACHE = 'neon-breaker-v2';
+const CACHE = 'neon-breaker-v3';
 const ASSETS = [
   './',
   './index.html',
+  './privacy.html',
   './style.css',
   './manifest.json',
   './js/utils.js',
