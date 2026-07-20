@@ -3,7 +3,7 @@
  * und beim zweiten Start sofort startet (echtes App-Gefühl).
  */
 'use strict';
-const CACHE = 'neon-breaker-v1';
+const CACHE = 'neon-breaker-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -18,6 +18,7 @@ const ASSETS = [
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-512.png',
+  './icons/apple-touch-icon.png',
 ];
 
 self.addEventListener('install', (event) => {
