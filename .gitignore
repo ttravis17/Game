@@ -1,0 +1,17 @@
+# Node / Capacitor
+node_modules/
+
+# Xcode (falls später `npx cap add ios` ausgeführt wird)
+ios/App/Pods/
+ios/App/build/
+*.xcuserstate
+xcuserdata/
+
+# Android (falls später `npx cap add android` ausgeführt wird)
+android/.gradle/
+android/app/build/
+android/build/
+local.properties
+
+# OS
+.DS_Store
