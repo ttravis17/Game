@@ -10,6 +10,12 @@ Abhängigkeiten, läuft auf Desktop und Handy.
 **Spielen:** `neon-breaker/index.html` im Browser öffnen — fertig.
 Kein Build, kein Server nötig.
 
+**Als Web-App / auf dem Handy installieren:** Das Spiel ist eine
+installierbare PWA (eigenes Icon, Vollbildstart, offline spielbar).
+GitHub Pages einmalig unter *Settings → Pages → Source → GitHub Actions*
+aktivieren, danach live unter `https://ttravis17.github.io/Game/`.
+Für den Weg zu einer echten App-Store-App siehe [MOBILE_APP.md](MOBILE_APP.md).
+
 ### Features
 
 - **12 handgebaute Level** (Herz, Invasion, Festung, Reaktor, Finale …)

@@ -1,0 +1,13 @@
+{
+  "appId": "com.thoenen.neonbreaker",
+  "appName": "Neon Breaker",
+  "webDir": "neon-breaker",
+  "backgroundColor": "#05060e",
+  "ios": {
+    "contentInset": "always",
+    "backgroundColor": "#05060e"
+  },
+  "android": {
+    "backgroundColor": "#05060e"
+  }
+}
