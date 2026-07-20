@@ -20,16 +20,16 @@ NB.C = {
 };
 NB.C.BRICK_MARGIN = (NB.C.W - (NB.C.COLS * NB.C.BRICK_W + (NB.C.COLS - 1) * NB.C.BRICK_GAP)) / 2;
 
-/* Power-Up-Definitionen */
+/* Power-Up-Definitionen (Labels englisch, Buchstaben kollisionsfrei) */
 NB.POWERUPS = {
-  multi:  { letter: 'M', hue: 195, label: 'Multiball',      dur: 0,  weight: 16 },
-  wide:   { letter: 'B', hue: 130, label: 'Breites Paddle', dur: 14, weight: 15 },
-  laser:  { letter: 'L', hue: 355, label: 'Laser',          dur: 10, weight: 13 },
-  fire:   { letter: 'F', hue: 25,  label: 'Feuerball',      dur: 9,  weight: 11 },
-  sticky: { letter: 'K', hue: 285, label: 'Klebe-Paddle',   dur: 12, weight: 12 },
-  slow:   { letter: 'Z', hue: 220, label: 'Zeitlupe',       dur: 8,  weight: 12 },
-  shield: { letter: 'S', hue: 160, label: 'Schild',         dur: 0,  weight: 12 },
-  life:   { letter: '♥', hue: 340, label: 'Extra-Leben',    dur: 0,  weight: 5 },
+  multi:  { letter: 'M', hue: 195, label: 'Multiball',    dur: 0,  weight: 16 },
+  wide:   { letter: 'W', hue: 130, label: 'Wide Paddle',  dur: 14, weight: 15 },
+  laser:  { letter: 'L', hue: 355, label: 'Laser',        dur: 10, weight: 13 },
+  fire:   { letter: 'F', hue: 25,  label: 'Fireball',     dur: 9,  weight: 11 },
+  sticky: { letter: 'C', hue: 285, label: 'Catch Paddle', dur: 12, weight: 12 },
+  slow:   { letter: 'Z', hue: 220, label: 'Slow-Mo',      dur: 8,  weight: 12 },
+  shield: { letter: 'S', hue: 160, label: 'Shield',       dur: 0,  weight: 12 },
+  life:   { letter: '♥', hue: 340, label: 'Extra Life',   dur: 0,  weight: 5 },
 };
 
 (() => {
